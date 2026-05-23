@@ -1,0 +1,41 @@
+variables:
+  GIT_DEPTH: "0"
+
+stages:
+  - guard
+
+protect_seed_manifest:
+  stage: guard
+  image: python:3.12-slim-bookworm
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends git
+    - rm -rf /var/lib/apt/lists/*
+
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - when: on_success
+
+  script:
+    - set -eu
+    - |
+      if [ -n "${CI_MERGE_REQUEST_IID:-}" ]; then
+        BASE_SHA="${CI_MERGE_REQUEST_DIFF_BASE_SHA}"
+      elif \
+        [ -n "${CI_COMMIT_BEFORE_SHA:-}" ] && \
+        [ "$CI_COMMIT_BEFORE_SHA" != "0000000000000000000000000000000000000000" ]
+      then
+        BASE_SHA="${CI_COMMIT_BEFORE_SHA}"
+      else
+        REMOTE_BRANCH="${CI_DEFAULT_BRANCH:-main}"
+        git fetch origin "${REMOTE_BRANCH}" || git fetch origin "${REMOTE_BRANCH}:refs/remotes/origin/${REMOTE_BRANCH}"
+        FETCH_REF="$(git rev-parse "origin/${REMOTE_BRANCH}")"
+        BASE_SHA="$(git merge-base "${FETCH_REF}" "${CI_COMMIT_SHA}")"
+      fi
+    - >-
+      python scripts/check_protected_paths.py
+      --manifest maintainers/seed-protected-paths.txt
+      --repository .
+      --from-ref "${BASE_SHA}"
+      --to-ref "${CI_COMMIT_SHA}"

@@ -1,0 +1,26 @@
+#
+# CODEOWNERS (GitLab): descomenta y reemplaza @TU-GRUPO por un grupo o usuario real.
+#
+# Ejemplo:
+# Dockerfile @TU-ORG/seed-platform
+# app/seed_main.py @TU-ORG/seed-platform
+#
+# Todas las líneas efectivas están comentadas para que los clones públicos fallen de forma benigna hasta que tu equipo configure owners.
+#
+
+# Dockerfile @TU-GRUPO_REAL
+# .dockerignore @TU-GRUPO_REAL
+# requirements.txt @TU-GRUPO_REAL
+#
+# maintainers/** @TU-GRUPO_REAL
+# scripts/check_protected_paths.py @TU-GRUPO_REAL
+# .pre-commit-config.yaml @TU-GRUPO_REAL
+#
+# .gitlab-ci.yml @TU-GRUPO_REAL
+# .gitlab/CODEOWNERS @TU-GRUPO_REAL
+#
+# app/seed_main.py @TU-GRUPO_REAL
+# app/.streamlit/config.toml @TU-GRUPO_REAL
+# app/seed_ui.py @TU-GRUPO_REAL
+#
+# .github/workflows/** @TU-GRUPO_REAL

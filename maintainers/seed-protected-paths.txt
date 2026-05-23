@@ -1,0 +1,21 @@
+# Infra declarada como protegida para CI/local hooks (consultá maintainers/README.md).
+# Sintaxis: patrones posix estilo globs relativos al root del repo.
+# Ignoramos líneas en blanco o que empiecen por #.
+
+Dockerfile
+.dockerignore
+requirements.txt
+
+app/seed_main.py
+app/.streamlit/config.toml
+app/seed_ui.py
+
+maintainers/seed-protected-paths.txt
+scripts/check_protected_paths.py
+scripts/pre_commit_seed_guard_wrapper.py
+.pre-commit-config.yaml
+
+.gitlab-ci.yml
+.gitlab/CODEOWNERS
+
+.github/workflows/**

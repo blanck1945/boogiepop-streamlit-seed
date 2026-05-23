@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: protect-seed-paths-local
+        name: Validar infra seed (lista maintainers/)
+        language: python
+        entry: python scripts/pre_commit_seed_guard_wrapper.py
+        pass_filenames: false
+        always_run: true

@@ -1,0 +1,21 @@
+[server]
+headless = true
+enableXsrfProtection = true
+# Permite llamadas iniciadas desde el hub React durante desarrollo local (iframe en otro puerto que :8501).
+corsAllowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+[browser]
+gatherUsageStats = false
+
+[client]
+# Reduce menú/despliegue superior; menos aire perdido antes del contenido cuando se embebe en iframe ancho/alto (hub).
+toolbarMode = "minimal"
+
+[theme]
+base = "light"
+primaryColor = "#4361ee"
+backgroundColor = "#ffffff"
+# Igualado al fondo de página para que no quede un bloque hueco tipo “grey band” antes del footer de Streamlit al ver la app dentro de un iframe alto.
+secondaryBackgroundColor = "#ffffff"
+textColor = "#1a1a2e"
+font = "sans serif"

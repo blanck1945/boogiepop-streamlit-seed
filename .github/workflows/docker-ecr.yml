@@ -1,0 +1,70 @@
+name: Docker build and push to ECR
+
+# Plantilla lista para usar con AWS OIDC (rol IAM federado contra GitHub) o AK/SK locales.
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  # Repositorios: creá estos en GitHub (Settings → Secrets and variables → Actions → Variables).
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_CLUSTER_NAME: ${{ vars.ECS_CLUSTER_NAME }}
+  ECS_SERVICE_NAME: ${{ vars.ECS_SERVICE_NAME }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Si no usás OIDC, comentá el paso anterior y usá:
+      # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image metadata
+        id: meta
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          TAG: ${{ steps.meta.outputs.SHORT_SHA }}
+        run: |
+          IMAGE_URI="${REGISTRY}/${ECR_REPOSITORY}:${TAG}"
+          docker build -t "${IMAGE_URI}" -t "${REGISTRY}/${ECR_REPOSITORY}:latest" .
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Push Docker image tags
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          TAG: ${{ steps.meta.outputs.SHORT_SHA }}
+        run: |
+          docker push "${REGISTRY}/${ECR_REPOSITORY}:${TAG}"
+          docker push "${REGISTRY}/${ECR_REPOSITORY}:latest"
+
+      - name: Optional — force new ECS deployment
+        # Definí ECS_CLUSTER_NAME y ECS_SERVICE_NAME como variables de Actions.
+        # El servicio debe usar una task definition cuya imagen apunte al tag que acabás de publicar (:latest o una revisión nueva).
+        if: ${{ vars.ECS_CLUSTER_NAME != '' && vars.ECS_SERVICE_NAME != '' }}
+        run: |
+          aws ecs update-service \
+            --cluster "${ECS_CLUSTER_NAME}" \
+            --service "${ECS_SERVICE_NAME}" \
+            --force-new-deployment

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+.idea/
+.vscode/
+
+# Opcional: guía sólo equipo local entre seeds React/Streamlit (descomenta si preferís no versionarla).
+# spec-kit/guia-replicacion-react-y-otros.md
