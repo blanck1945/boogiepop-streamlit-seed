@@ -20,6 +20,8 @@ hero_card(
     "Plantilla multipágina lista para ECS: tema, páginas, sesión y cachés.",
 )
 
+st.caption("Deploy probe · **halcón-streamlit-0524**")
+
 st.markdown(
     "Usá el menú lateral para navegar entre **Demo** "
     "(estado + cachés) y **Sobre el seed** (guía)."
