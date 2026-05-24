@@ -1,9 +1,18 @@
 variables:
   GIT_DEPTH: "0"
   AWS_DEFAULT_REGION: us-east-1
+  ECR_REGISTRY: "653876198281.dkr.ecr.us-east-1.amazonaws.com"
   STREAMLIT_ECR_REPOSITORY: boogiepop-streamlit
   ECS_CLUSTER_NAME: boogiepop-api-cluster
   ECS_STREAMLIT_SERVICE_NAME: boogiepop-api-streamlit-svc
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+    - when: never
 
 stages:
   - guard
@@ -75,6 +84,16 @@ merge_request_branch_flow:
   before_script:
     - apt-get update -qq
     - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl ca-certificates unzip gnupg
+    - |
+      set -eu
+      if [ -z "${ECR_REGISTRY:-}" ]; then
+        echo "ERROR: definí ECR_REGISTRY en Settings → CI/CD → Variables"
+        exit 1
+      fi
+      if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+        echo "ERROR: faltan AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (Protected en main)."
+        exit 1
+      fi
     - install -dm755 /etc/apt/keyrings
     - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - chmod a+r /etc/apt/keyrings/docker.gpg
@@ -107,14 +126,14 @@ merge_request_branch_flow:
 docker-publish-streamlit:
   extends: .docker_publish_streamlit
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push" && $ECR_REGISTRY'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
       when: manual
     - when: never
 
 docker-publish-streamlit-prod:
   extends: .docker_publish_streamlit
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $ECR_REGISTRY'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
       when: on_success
     - when: never
 
@@ -123,13 +142,21 @@ deploy-streamlit-ecs:
   image:
     name: amazon/aws-cli:2.27.25
     entrypoint: [""]
-  script:
-    - aws sts get-caller-identity
-    - aws ecs update-service --cluster "$ECS_CLUSTER_NAME" --service "$ECS_STREAMLIT_SERVICE_NAME" --force-new-deployment --region "$AWS_DEFAULT_REGION"
+  needs: ["docker-publish-streamlit"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
       when: manual
     - when: never
+  before_script:
+    - |
+      set -eu
+      if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+        echo "ERROR: faltan credenciales AWS en CI/CD Variables."
+        exit 1
+      fi
+  script:
+    - aws sts get-caller-identity
+    - aws ecs update-service --cluster "$ECS_CLUSTER_NAME" --service "$ECS_STREAMLIT_SERVICE_NAME" --force-new-deployment --region "$AWS_DEFAULT_REGION"
 
 deploy-streamlit-ecs-prod:
   stage: deploy
@@ -138,9 +165,16 @@ deploy-streamlit-ecs-prod:
     entrypoint: [""]
   needs: ["docker-publish-streamlit-prod"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $ECR_REGISTRY'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
       when: on_success
     - when: never
+  before_script:
+    - |
+      set -eu
+      if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+        echo "ERROR: faltan credenciales AWS en CI/CD Variables."
+        exit 1
+      fi
   script:
     - aws sts get-caller-identity
     - aws ecs update-service --cluster "$ECS_CLUSTER_NAME" --service "$ECS_STREAMLIT_SERVICE_NAME" --force-new-deployment --region "$AWS_DEFAULT_REGION"

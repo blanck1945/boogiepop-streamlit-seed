@@ -7,7 +7,7 @@ Patrón alineado con **`boogiepop-react-seed`** ([`docs/GITLAB-DEPLOY.md`](../..
 | Momento | Pipeline | Deploy |
 |---------|----------|--------|
 | **MR → `main`** | `protect_seed_manifest` + `merge_request_branch_flow` | — |
-| **Push / merge a `main`** | guard + **`docker-publish-streamlit-prod`** + **`deploy-streamlit-ecs-prod`** | **Automático** → ECR `:latest` + rollout ECS |
+| **Push / merge a `main`** | **`docker-publish-streamlit-prod`** + **`deploy-streamlit-ecs-prod`** | **Automático** → ECR `:latest` + rollout ECS |
 | **Push a `develop`** | guard + jobs **manual** | Staging opcional (`:develop`) |
 
 ## Variables (Settings → CI/CD → Variables)
