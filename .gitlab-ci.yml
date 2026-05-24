@@ -1,3 +1,11 @@
+# GitLab CI — boogiepop-streamlit-seed (Streamlit en ECS /streamlit)
+#
+# main (push): docker-publish-streamlit-prod + deploy-streamlit-ecs-prod (automático).
+# develop: jobs Docker/ECS manual.
+#
+# Variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (Protected en main).
+# ECR_REGISTRY tiene default en YAML.
+
 variables:
   GIT_DEPTH: "0"
   AWS_DEFAULT_REGION: us-east-1
@@ -94,6 +102,11 @@ merge_request_branch_flow:
         echo "ERROR: faltan AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (Protected en main)."
         exit 1
       fi
+      if [ -z "${ECR_REGISTRY:-}" ]; then
+        echo "ERROR: ECR_REGISTRY vacía."
+        exit 1
+      fi
+      echo "Build streamlit: ECR=${ECR_REGISTRY}/${STREAMLIT_ECR_REPOSITORY}"
     - install -dm755 /etc/apt/keyrings
     - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - chmod a+r /etc/apt/keyrings/docker.gpg

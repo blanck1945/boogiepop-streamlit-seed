@@ -16,8 +16,8 @@ Mismas credenciales AWS que el **host**:
 
 | Variable | Valor / default |
 |----------|-----------------|
-| **`ECR_REGISTRY`** | `653876198281.dkr.ecr.us-east-1.amazonaws.com` (obligatoria para prod) |
-| **`AWS_ACCESS_KEY_ID`** / **`AWS_SECRET_ACCESS_KEY`** | ECR push + ECS update |
+| **`ECR_REGISTRY`** | Default en YAML: `653876198281.dkr.ecr.us-east-1.amazonaws.com` (override opcional) |
+| **`AWS_ACCESS_KEY_ID`** / **`AWS_SECRET_ACCESS_KEY`** | **Obligatorias** — ECR push + ECS update (Protected en `main`) |
 | **`STREAMLIT_ECR_REPOSITORY`** | Default YAML: `boogiepop-streamlit` |
 | **`ECS_CLUSTER_NAME`** | Default: `boogiepop-api-cluster` |
 | **`ECS_STREAMLIT_SERVICE_NAME`** | Default: `boogiepop-api-streamlit-svc` |
