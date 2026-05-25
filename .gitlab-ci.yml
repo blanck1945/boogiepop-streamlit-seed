@@ -25,6 +25,7 @@ workflow:
 
 stages:
   - guard
+  - verify
   - deploy
 
 # Validación de manifest de infra: MR hacia líneas estable o push directo a develop/staging/main.
@@ -78,6 +79,17 @@ merge_request_branch_flow:
   script:
     - chmod +x scripts/gitlab/validate_mr_branch_flow.sh
     - sh scripts/gitlab/validate_mr_branch_flow.sh
+
+streamlit-build-check:
+  stage: verify
+  image: python:3.12-slim-bookworm
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: never
+  script:
+    - python -m compileall app
 
 .docker_publish_streamlit:
   stage: deploy
