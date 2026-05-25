@@ -146,14 +146,14 @@ merge_request_branch_flow:
 docker-publish-streamlit:
   extends: .docker_publish_streamlit
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push" && $AWS_ROLE_ARN'
       when: manual
     - when: never
 
 docker-publish-streamlit-prod:
   extends: .docker_publish_streamlit
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $AWS_ROLE_ARN'
       when: on_success
     - when: never
 
@@ -167,7 +167,7 @@ deploy-streamlit-ecs:
       aud: https://gitlab.com
   needs: ["docker-publish-streamlit"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push" && $AWS_ROLE_ARN'
       when: manual
     - when: never
   before_script:
@@ -194,7 +194,7 @@ deploy-streamlit-ecs-prod:
       aud: https://gitlab.com
   needs: ["docker-publish-streamlit-prod"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push" && $AWS_ROLE_ARN'
       when: on_success
     - when: never
   before_script:
