@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from boogiepop_auth_sdk import resolve_boogiepop_session
 from seed_main import PLATFORM_APP_TITLE, configure_page
 from seed_ui import hero_card
 
@@ -27,6 +28,16 @@ st.markdown(
     "(estado + cachés) y **Sobre el seed** (guía)."
 )
 st.markdown('<p class="seed-muted">Ejecutá localmente: <code>streamlit run Home.py</code> desde la carpeta <code>app/</code>.</p>', unsafe_allow_html=True)
+
+st.subheader("Sesión del usuario (SDK)")
+session = resolve_boogiepop_session()
+if not session.token:
+    st.info("Falta token.")
+else:
+    st.write(f"Usuario: {session.user.email if session.user else 'sin datos de usuario'}")
+    st.write(f"Roles: {', '.join(session.roles) if session.roles else 'sin roles'}")
+if session.error:
+    st.caption(f"Detalle SDK: {session.error}")
 
 st.divider()
 c1, c2 = st.columns(2)
