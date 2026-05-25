@@ -101,3 +101,15 @@ Para onboarding paso a paso dirigido a LLMs —mapa rápido, stack, plantillas o
 ## Contenidos del seed en la UI
 
 La app incluye páginas de ejemplo y una guía in-app (**Sobre el seed**) sobre CSS base, tema, multipágina (`pages/`), `st.session_state` y decorators de caché.
+
+## SDK auth (sin login)
+
+Este seed incluye `app/boogiepop_auth_sdk.py` para consumir identidad/roles sin acoplar login al remote:
+
+- `resolve_boogiepop_session(...)` obtiene token (param opcional o query param `bpToken`) y consulta `GET /api/auth/me`.
+- `has_role(snapshot, "admin")` y `has_any_role(snapshot, [...])` para checks simples.
+
+Variables/contrato:
+
+- `BOOGIEPOP_API_BASE_URL` (ej. `https://api.tu-dominio.com`).
+- El login (`POST /api/auth/login`) queda en el host; Streamlit sólo consume `/api/auth/me`.
