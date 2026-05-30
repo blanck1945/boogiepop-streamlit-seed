@@ -2,6 +2,47 @@
 
 Plantilla lista para desarrolladores: app multipágina Streamlit con **dependencias congeladas**, **Docker**, guía para **AWS ECR** y **ECS**, y **`AGENTS.md`** para automatizar trabajo con herramientas de IA sin romper infraestructura.
 
+---
+
+## En la plataforma
+
+```mermaid
+graph TD
+    HOST["boogiepop-host\nHost — embebe este seed\nvía iframe (iframeUrl en manifest)"]
+    SEED["boogiepop-streamlit-seed\nPython + Streamlit\napp multipágina\n← este repo"]
+    AUTHSDK["boogiepop_auth_sdk.py\nincluido en app/\nresolve_boogiepop_session()\nhas_role() / has_any_role()"]
+    BACKEND["boogiepop-backend\nAPI REST\nPOST /api/auth/login\nGET /api/auth/me"]
+    GUARDS["boogiepop-platform-guards\nCI guard — protege AGENTS.md\ny .github/workflows/\ncheck_protected_paths.py"]
+    CLI["boogiepop-cli\nbp update / bp versions\nbinario standalone — sin Node.js"]
+    PRECOMMIT["pre-commit\nHook manager Python\ncheck_protected_paths.py\nruff (pre-push)"]
+    ECR["Amazon ECR\nRegistro de imágenes Docker"]
+    ECS["Amazon ECS\nServicio en producción\npuerto 8501"]
+
+    HOST -->|"iframe embed\niframeUrl en manifest"| SEED
+    SEED -->|"resolve_boogiepop_session()"| AUTHSDK
+    AUTHSDK -->|"GET /api/auth/me"| BACKEND
+    HOST -->|"POST /api/auth/login"| BACKEND
+
+    SEED -->|"Docker build → push"| ECR
+    ECR -->|"force-new-deployment"| ECS
+
+    GUARDS -->|"required status check\nbranch protection"| SEED
+    PRECOMMIT -->|"bloquea commits\nsobre paths protegidos"| SEED
+    CLI -->|"boogiepop update\nbinario standalone"| SEED
+```
+
+| Parte | Rol respecto a este seed |
+|-------|--------------------------|
+| `boogiepop-host` | Embebe este seed via `iframeUrl` en el manifest del hub |
+| `boogiepop_auth_sdk.py` | SDK Python incluido en `app/` — consume sesión del host sin login propio |
+| `boogiepop-backend` | Provee `GET /api/auth/me`; el login vive en el host |
+| `boogiepop-platform-guards` | Guard de CI + `check_protected_paths.py` local — protege archivos de infra |
+| `pre-commit` | Hook manager Python — bloquea commits sobre paths protegidos, ruff en pre-push |
+| `boogiepop-cli` | Binario standalone (sin Node.js) — `bp update` aplica cambios del template |
+| AWS ECR / ECS | Imagen Docker, healthcheck `/_stcore/health`, servida en puerto 8501 |
+
+---
+
 ## Ejecutar en local
 
 1. Creá un entorno virtual e instalá las dependencias (siempre desde la raíz del repo):
