@@ -1,3 +1,4 @@
+# Seed entry point — do not delete or move this file
 """Arranque y branding global del seed (no destinado a edición de product teams).
 
 Aquí vivís valores de marca compartidos: título de ventana combinado con la página actual,
@@ -14,6 +15,13 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import streamlit as st
+
+# Carga .env desde el directorio de la app si existe (dev local).
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+except ImportError:
+    pass
 
 from seed_ui import inject_base_css
 
