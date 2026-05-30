@@ -7,3 +7,11 @@ repos:
         entry: python scripts/pre_commit_seed_guard_wrapper.py
         pass_filenames: false
         always_run: true
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13
+    hooks:
+      - id: ruff
+        name: lint (ruff) — pre-push
+        args: [--fix]
+        stages: [pre-push]

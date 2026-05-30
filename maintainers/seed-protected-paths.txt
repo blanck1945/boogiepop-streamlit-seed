@@ -2,6 +2,7 @@
 # Sintaxis: patrones posix estilo globs relativos al root del repo.
 # Ignoramos líneas en blanco o que empiecen por #.
 
+AGENTS.md
 Dockerfile
 .dockerignore
 requirements.txt
