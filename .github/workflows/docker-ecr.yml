@@ -27,7 +27,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: arn:aws:iam::653876198281:role/boogiepop-api-github-actions
           aws-region: ${{ env.AWS_REGION }}
 
       # Si no usás OIDC, comentá el paso anterior y usá:
